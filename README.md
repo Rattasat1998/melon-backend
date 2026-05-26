@@ -25,6 +25,12 @@ When running the API directly on your host while Postgres is in Docker, change `
 DATABASE_URL=postgresql://melon:change_me@localhost:5432/melon_backend?schema=public
 ```
 
+Seed mockup data for frontend integration:
+
+```bash
+npm run prisma:seed
+```
+
 ## Droplet Setup
 
 Install Docker and Docker Compose on the Droplet, then deploy from this project folder:
@@ -53,6 +59,12 @@ http://YOUR_DROPLET_IP:3000/openapi.json
 ```
 
 Recommended next step on the Droplet is to put Nginx in front of the API and issue TLS with Certbot when a domain is ready.
+
+To seed mockup data on the Droplet after the API image is built:
+
+```bash
+docker compose run --rm --entrypoint node api prisma/seed.mjs
+```
 
 ## Current API
 
