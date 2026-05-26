@@ -34,10 +34,22 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-The API listens on port `3000` by default. Swagger documentation is available at:
+The API listens on port `3000` by default. Scalar API reference is available at:
+
+```text
+http://YOUR_DROPLET_IP:3000/reference
+```
+
+Swagger documentation is still available at:
 
 ```text
 http://YOUR_DROPLET_IP:3000/docs
+```
+
+The OpenAPI JSON document is available at:
+
+```text
+http://YOUR_DROPLET_IP:3000/openapi.json
 ```
 
 Recommended next step on the Droplet is to put Nginx in front of the API and issue TLS with Certbot when a domain is ready.
@@ -45,6 +57,8 @@ Recommended next step on the Droplet is to put Nginx in front of the API and iss
 ## Current API
 
 - `GET /health`
+- `GET /reference`
+- `GET /openapi.json`
 - `GET /farms`
 - `POST /farms`
 - `GET /farms/:id`
