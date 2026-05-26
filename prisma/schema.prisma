@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CropCycleStatus {
+  PLANNED
+  ACTIVE
+  HARVESTED
+  CANCELLED
+}
+
+enum GrowthStage {
+  SEEDLING
+  VEGETATIVE
+  FLOWERING
+  FRUITING
+  RIPENING
+  HARVESTED
+}
+
+enum TaskStatus {
+  TODO
+  DONE
+  SKIPPED
+}
+
+enum TaskType {
+  WATERING
+  FERTILIZING
+  PEST_CONTROL
+  PRUNING
+  POLLINATION
+  INSPECTION
+  HARVEST
+  OTHER
+}
+
+model Farm {
+  id         String      @id @default(uuid())
+  name       String
+  location   String?
+  ownerName  String?
+  notes      String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  cropCycles CropCycle[]
+  tasks      Task[]
+}
+
+model CropCycle {
+  id                String          @id @default(uuid())
+  farmId            String
+  name              String
+  variety           String?
+  status            CropCycleStatus @default(PLANNED)
+  startedAt         DateTime?
+  expectedHarvestAt DateTime?
+  harvestedAt       DateTime?
+  plantsCount       Int?
+  areaSqm           Decimal?        @db.Decimal(10, 2)
+  notes             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  farm              Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  growthLogs        GrowthLog[]
+  sensorReadings    SensorReading[]
+  tasks             Task[]
+
+  @@index([farmId])
+  @@index([status])
+}
+
+model GrowthLog {
+  id              String      @id @default(uuid())
+  cropCycleId     String
+  stage           GrowthStage
+  loggedAt        DateTime    @default(now())
+  heightCm        Decimal?    @db.Decimal(10, 2)
+  leafCount       Int?
+  fruitCount      Int?
+  temperatureC    Decimal?    @db.Decimal(5, 2)
+  humidityPercent Decimal?    @db.Decimal(5, 2)
+  ph              Decimal?    @db.Decimal(4, 2)
+  notes           String?
+  createdAt       DateTime    @default(now())
+  cropCycle       CropCycle   @relation(fields: [cropCycleId], references: [id], onDelete: Cascade)
+
+  @@index([cropCycleId, loggedAt])
+}
+
+model SensorReading {
+  id                  String     @id @default(uuid())
+  cropCycleId         String?
+  sensorId            String
+  recordedAt          DateTime   @default(now())
+  temperatureC        Decimal?   @db.Decimal(5, 2)
+  humidityPercent     Decimal?   @db.Decimal(5, 2)
+  soilMoisturePercent Decimal?   @db.Decimal(5, 2)
+  ph                  Decimal?   @db.Decimal(4, 2)
+  ec                  Decimal?   @db.Decimal(8, 2)
+  cropCycle           CropCycle? @relation(fields: [cropCycleId], references: [id], onDelete: SetNull)
+
+  @@index([sensorId, recordedAt])
+  @@index([cropCycleId, recordedAt])
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  farmId      String?
+  cropCycleId String?
+  title       String
+  type        TaskType   @default(OTHER)
+  status      TaskStatus @default(TODO)
+  dueAt       DateTime?
+  completedAt DateTime?
+  notes       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  farm        Farm?      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  cropCycle   CropCycle? @relation(fields: [cropCycleId], references: [id], onDelete: Cascade)
+
+  @@index([farmId])
+  @@index([cropCycleId])
+  @@index([status, dueAt])
+}
